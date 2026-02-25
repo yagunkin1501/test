@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Доходы</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="/icon-180.png">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, sans-serif;
+      padding: 0;
+      margin: 0;
+      background: #f5f5f7;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #007AFF;
+      color: white;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+    .top-btn {
+      width: 36px;
+      height: 36px;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      font-weight: bold;
+      color: #007AFF;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .top-title {
+      font-size: 17px;
+      font-weight: 600;
+    }
+    .main-content {
+      padding-top: 60px;
+      padding-bottom: 20px;
+    }
+    .month-header {
+      text-align: center;
+      padding: 16px 0 8px;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    .calendar-nav {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 16px 8px;
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      padding: 0 12px;
+    }
+    .day-name {
+      text-align: center;
+      font-size: 0.85em;
+      color: #888;
+      padding: 4px 0;
+    }
+    .day-cell {
+      aspect-ratio: 1;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      position: relative;
+      padding-top: 4px;
+      border: 2px solid transparent;
+    }
+    .day-cell.other-month {
+      color: #ccc;
+      background: #f0f0f0;
+    }
+    .day-cell.today {
+      border-color: #ccc;
+    }
+    .day-cell.selected {
+      border-color: #000;
+    }
+    .dots {
+      position: absolute;
+      bottom: 4px;
+      display: flex;
+      gap: 2px;
+    }
+    .dot {
+      width: 4px;
+      height: 4px;
+      background: #007AFF;
+      border-radius: 50%;
+    }
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: flex-start;
+      z-index: 90;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .modal.active {
+      opacity: 1;
+    }
+    .modal-content {
+      background: white;
+      width: 100%;
+      min-height: 100vh;
+      max-height: 100vh;
+      overflow-y: auto;
+      padding: 24px 16px 80px;
+      box-sizing: border-box;
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+    }
+    .modal.active .modal-content {
+      transform: translateY(0);
+    }
+    input, textarea, select, button {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-size: 17px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #007AFF;
+      color: white;
+      font-weight: bold;
+      border: none;
+    }
+    .record-item {
+      padding: 14px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .service-entry {
+      background: #f9f9f9;
+      padding: 12px;
+      border-radius: 10px;
+      margin: 8px 0;
+      position: relative;
+    }
+    .remove-service {
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 20px;
+      font-weight: bold;
+      color: #ff3b30;
+      cursor: pointer;
+      width: auto;
+      height: auto;
+      padding: 0;
+      margin: 0;
+    }
+    .remove-btn {
+      margin-top: 8px;
+      background: #ff3b30;
+      color: white;
+      border: none;
+      padding: 8px;
+      border-radius: 8px;
+      width: 100%;
+      font-size: 16px;
+    }
+    .side-menu {
+      position: fixed;
+      top: 0;
+      right: -240px;
+      width: 240px;
+      height: 100vh;
+      background: white;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+      z-index: 200;
+      transition: right 0.3s ease;
+      padding: 80px 16px 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .side-menu.open {
+      right: 0;
+    }
+    .side-menu h3 {
+      margin-top: 0;
+    }
+    .backup-section {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 199;
+      display: none;
+    }
+    .overlay.active {
+      display: block;
+    }
+    .notification {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #333;
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      z-index: 1000;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <button class="top-btn" id="back-btn" style="display:none;" onclick="goBack()">&lt;</button>
+    <div class="top-title" id="page-title">Доходы</div>
+    <button class="top-btn" id="menu-btn" onclick="openSideMenu()">≡</button>
+  </div>
+
+  <div class="main-content">
+    <div class="month-header" id="month-title">Январь 2026</div>
+    <div class="calendar-nav">
+      <button onclick="prevMonth()">&lt;</button>
+      <button onclick="nextMonth()">&gt;</button>
+    </div>
+    <div class="calendar" id="calendar"></div>
+  </div>
+
+  <div id="modal" class="modal" onclick="closeModal(event)">
+    <div class="modal-content" id="modal-content"></div>
+  </div>
+
+  <div id="side-menu" class="side-menu">
+    <div>
+      <h3>Меню</h3>
+      <button onclick="openClients(); closeSideMenu()">👥 Клиенты</button>
+      <button onclick="openServices(); closeSideMenu()">🛠 Услуги</button>
+      <button onclick="openStats(); closeSideMenu()">📊 Статистика</button>
+    </div>
+    <div class="backup-section">
+      <button onclick="exportBackup(); closeSideMenu()">💾 Экспорт</button>
+      <button onclick="importBackup(); closeSideMenu()">📂 Импорт</button>
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay" onclick="closeSideMenu()"></div>
+  <div id="notification" class="notification">Сохранено!</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
+  <script src="app.js?v=34"></script>
+
+  <script>
+    let currentView = 'calendar';
+
+    function goBack() {
+      if (currentView !== 'calendar') {
+        closeModal();
+        currentView = 'calendar';
+        updateHeader();
+      }
+    }
+
+    function updateHeader() {
+      const backBtn = document.getElementById('back-btn');
+      const menuBtn = document.getElementById('menu-btn');
+      const addBtn = document.getElementById('add-btn');
+      const pageTitle = document.getElementById('page-title');
+
+      if (currentView === 'calendar') {
+        // Главный экран: только меню справа
+        backBtn.style.display = 'none';
+        menuBtn.style.display = 'block';
+        pageTitle.textContent = 'Доходы';
+      } else {
+        // Списки: ← назад | + добавить
+        backBtn.style.display = 'block';
+        menuBtn.style.display = 'none';
+        addBtn.style.display = 'block';
+      }
+    }
+
+    function setView(view, title = 'Доходы') {
+      currentView = view;
+      const pageTitle = document.getElementById('page-title');
+      pageTitle.textContent = title;
+      updateHeader();
+    }
+
+    function openSideMenu() {
+      document.getElementById('side-menu').classList.add('open');
+      document.getElementById('overlay').classList.add('active');
+    }
+
+    function closeSideMenu() {
+      document.getElementById('side-menu').classList.remove('open');
+      document.getElementById('overlay').classList.remove('active');
+    }
+
+    function triggerAddAction() {
+      if (currentView === 'clients') {
+        openAddClientForm();
+      } else if (currentView === 'services') {
+        openAddServiceForm();
+      }
+    }
+
+    // Динамическое создание кнопки "+"
+    const addBtn = document.createElement('button');
+    addBtn.className = 'top-btn';
+    addBtn.id = 'add-btn';
+    addBtn.textContent = '+';
+    addBtn.onclick = triggerAddAction;
+    addBtn.style.display = 'none';
+    document.querySelector('.top-bar').appendChild(addBtn);
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js?v=1').catch(console.warn);
+    }
+  </script>
+</body>
+</html>
