@@ -287,7 +287,7 @@
   <div id="notification" class="notification">Сохранено!</div>
 
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
-  <script src="app.js?v=34"></script>
+  <script src="app.js?v=35"></script>
 
   <script>
     let currentView = 'calendar';
@@ -310,19 +310,25 @@
         // Главный экран: только меню справа
         backBtn.style.display = 'none';
         menuBtn.style.display = 'block';
+        if (addBtn) addBtn.style.display = 'none';
         pageTitle.textContent = 'Доходы';
-      } else {
-        // Списки: ← назад | + добавить
+      } else if (currentView === 'stats') {
+        // Статистика: только ← назад
         backBtn.style.display = 'block';
         menuBtn.style.display = 'none';
-        addBtn.style.display = 'block';
+        if (addBtn) addBtn.style.display = 'none';
+        pageTitle.textContent = 'Статистика';
+      } else {
+        // Клиенты / Услуги: ← назад | + добавить
+        backBtn.style.display = 'block';
+        menuBtn.style.display = 'none';
+        if (addBtn) addBtn.style.display = 'block';
+        pageTitle.textContent = currentView === 'clients' ? 'Клиенты' : 'Услуги';
       }
     }
 
     function setView(view, title = 'Доходы') {
       currentView = view;
-      const pageTitle = document.getElementById('page-title');
-      pageTitle.textContent = title;
       updateHeader();
     }
 

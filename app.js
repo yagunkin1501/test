@@ -544,7 +544,7 @@ function openClients() {
   `;
 
   openModal(html);
-  setView('clients', 'Клиенты');
+  setView('clients');
 }
 
 function openAddClientForm() {
@@ -655,7 +655,7 @@ function openServices() {
   `;
 
   openModal(html);
-  setView('services', 'Услуги');
+  setView('services');
 }
 
 function openAddServiceForm() {
@@ -821,7 +821,7 @@ function openStats() {
   html += '</div>';
 
   openModal(html);
-  setView('stats', 'Статистика');
+  setView('stats');
 }
 
 // === РЕЗЕРВНОЕ КОПИРОВАНИЕ ===
